@@ -6,19 +6,29 @@
 #include <iostream>
 
 #include "Equipment.h"
+#include "GlobalVariableDefinitions.h"
+#include "Timer.h"
 
 char title[10] = "2D Scene!";
 
-Racket racket1;
+/* Rackets */
+Racket racket1("first");
+Racket racket2("second");
 
-int movement = 5;
+/* Ball */
+Ball ball;
+
+/* Timer */
+Timer timer;
+
+//int movement = 5;
 
 int leftPos = 40;
 int rightPos = 120;
 int topPos = 80;
 int bottomPos = 40;
 
-int ballLocation[2] = { 250, 480 };
+int ballLocation[2] = { xWindowMax/2, yWindowMax - 40};
 
 int user1Points = 0;
 int user2Points = 0;
@@ -29,13 +39,13 @@ int keyArr[127];
 
 void init()
 {
-    glViewport(0, 0, 1000, 1000);
+    glViewport(0, 0, xWindowMax, yWindowMax);
 
     glPointSize(10);
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glOrtho(0, 500, 0, 500, -1, 1);
+    glOrtho(xWindowMin, xWindowMax, yWindowMin, yWindowMax, -1, 1);
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
@@ -44,26 +54,22 @@ void init()
 
 void handleKeypress() {
     if (keyArr['a']) {
-        if (leftPos < 0)
-            return;
-        leftPos -= movement;
-        rightPos -= movement;
+        racket1.setLocation(racket1.getTopLeftXLocation() - racket1.getSpeed(), racket1.getTopLeftYLocation());
     }
     if (keyArr['d']) {
-        if (rightPos > 500)
-            return;
-        leftPos += movement;
-        rightPos += movement;
+        racket1.setLocation(racket1.getTopLeftXLocation() + racket1.getSpeed(), racket1.getTopLeftYLocation());
     }
     if (keyArr['j']) {
-        ballLocation[0] -= movement;
+        //ballLocation[0] -= racket1.getSpeed();
+        racket2.setLocation(racket2.getTopLeftXLocation() - racket2.getSpeed(), racket2.getTopLeftYLocation());
     }
     if (keyArr['l']) {
-        ballLocation[0] += movement;
+        //ballLocation[0] += racket1.getSpeed();
+        racket2.setLocation(racket2.getTopLeftXLocation() + racket2.getSpeed(), racket2.getTopLeftYLocation());
     }
-    if (keyArr['k']) {
-        ballLocation[1] -= movement;
-    }
+    //if (keyArr['k']) {
+    //    //ballLocation[1] -= racket1.getSpeed();
+    //}
 }
 
 void key(unsigned char key, int x, int y) {
@@ -129,23 +135,42 @@ void idle() {
 //    glutPostRedisplay();
 //}
 
-
-
 void checkPointPosition() {
-    if (ballLocation[1] < topPos) {
-        if (ballLocation[0] > rightPos || ballLocation[0] < leftPos) {
-            user1Points++;
-        }
-        else {
-            user2Points++;
-        }
-        printf("\033c"); // will reset terminal.
-        std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n";
-        std::cout << "User1 points: " << user1Points << std::endl;
-        std::cout << "User2 points: " << user2Points << std::endl;
-        std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n";
-        ballLocation[0] = 250;
-        ballLocation[1] = 480;
+    //if (ball.getBallLocation().y < yWindowMin + racket1.getHeight()*2 + 4) {
+    //    if (ball.getBallLocation().x > racket1.getTopLeftXLocation() + racket1.getWidth() || ball.getBallLocation().x < racket1.getTopLeftXLocation()) {
+    //        user1Points++;
+    //    }
+    //    else {
+    //        user2Points++;
+    //    }
+    //    printf("\033c"); // will reset terminal.
+    //    std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n";
+    //    std::cout << "User1 points: " << user1Points << std::endl;
+    //    std::cout << "User2 points: " << user2Points << std::endl;
+    //    std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n";
+    //    ballLocation[0] = 250;
+    //    ballLocation[1] = 480;
+    //    ball.setBallLocation(250, 480);
+    //}
+
+
+    /* Window collisions */
+    if (ball.getBallLocation().x <= xWindowMin || ball.getBallLocation().x >= xWindowMax)
+        ball.changeDefaultXDirection();
+    if (ball.getBallLocation().y <= yWindowMin || ball.getBallLocation().y >= yWindowMax)
+        ball.changeDefaultYDirection();
+    /* Player 1 collisions */
+    if (ball.getBallLocation().x > racket1.getTopLeftXLocation() && ball.getBallLocation().x < racket1.getTopLeftXLocation() + racket1.getWidth() && (ball.getBallLocation().y - 2) < yWindowMin + (2 * racket1.getHeight()))
+    {
+        ball.changeDefaultXDirection();
+        ball.changeDefaultYDirection();
+    }
+    /* Player 2 collisions */
+    if (ball.getBallLocation().x > racket2.getTopLeftXLocation() && ball.getBallLocation().x < racket2.getTopLeftXLocation() + racket2.getWidth() && (ball.getBallLocation().y + 2) > (racket2.getTopLeftYLocation() - racket2.getHeight()))
+
+    {
+        ball.changeDefaultXDirection();
+        ball.changeDefaultYDirection();
     }
 }
 void display() {
@@ -155,15 +180,26 @@ void display() {
 
     glColor3f(0, 255, 0);
     glBegin(GL_POINTS);
-        glVertex2f(ballLocation[0], ballLocation[1]);
+        glVertex2f(ball.getBallLocation().x, ball.getBallLocation().y);
+        timer.wait(10);
+        ball.moveBall();
     glEnd();
+
+    /* Draw the first racket */
 
     glColor3f(255, 0, 0);
     glBegin(GL_POLYGON);
-        glVertex2f(leftPos, bottomPos);
-        glVertex2f(leftPos, topPos);
-        glVertex2f(rightPos, topPos);
-        glVertex2f(rightPos, bottomPos);
+        glVertex2f(racket1.getTopLeftXLocation(), racket1.getTopLeftYLocation());
+        glVertex2f(racket1.getTopLeftXLocation() + racket1.getWidth(), racket1.getTopLeftYLocation());
+        glVertex2f(racket1.getTopLeftXLocation() + racket1.getWidth(), racket1.getTopLeftYLocation() - racket1.getHeight());
+        glVertex2f(racket1.getTopLeftXLocation(), racket1.getTopLeftYLocation() - racket1.getHeight());
+    glEnd();
+    glColor3f(0, 0, 255);
+    glBegin(GL_POLYGON);
+        glVertex2f(racket2.getTopLeftXLocation(), racket2.getTopLeftYLocation());
+        glVertex2f(racket2.getTopLeftXLocation() + racket2.getWidth(), racket2.getTopLeftYLocation());
+        glVertex2f(racket2.getTopLeftXLocation() + racket2.getWidth(), racket2.getTopLeftYLocation() - racket2.getHeight());
+        glVertex2f(racket2.getTopLeftXLocation(), racket2.getTopLeftYLocation() - racket2.getHeight());
     glEnd();
     glFlush();
     
@@ -172,6 +208,7 @@ void display() {
  
 /* Main function: GLUT runs as a console application starting at main() */
 int main(int argc, char** argv) {
+
     glutInit(&argc, argv);
     glutInitWindowSize(500, 500);
     glutInitWindowPosition(0, 0);

@@ -129,12 +129,16 @@
   <ItemGroup>
     <ClCompile Include="Equipment.cpp" />
     <ClCompile Include="Draw.cpp" />
+    <ClCompile Include="GlobalVariableDeclarations.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="Timer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Equipment.h" />
+    <ClInclude Include="GlobalVariableDefinitions.h" />
     <ClInclude Include="Headers.h" />
     <ClInclude Include="Prototypes.h" />
+    <ClInclude Include="Timer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
