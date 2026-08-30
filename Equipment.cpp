@@ -1,6 +1,4 @@
-#include <iostream>
 #include "Equipment.h"
-#include "GlobalVariableDefinitions.h"
 
 
 
@@ -23,8 +21,8 @@ void Racket::InitializeRacket(double xTopLeftLocation, double yTopLeftLocation, 
 
 Racket::Racket(std::string user) {
 	racketHeight = 30;
-	racketWidth = 80;
-	movementSpeed = 3.0f;
+	racketWidth = 100;
+	movementSpeed = 10.0f;
 	normalFormRed = 200.0f, normalFormGreen = 0.0f, normalFormBlue = 0.0f;
 	outlinesRed = 255.0f, outlinesGreen = 0.0f, outlinesBlue = 0.0f;
 
@@ -75,7 +73,14 @@ double Racket::getWidth() {
 double Racket::getSpeed() {
 	return this->movementSpeed;
 }
-
+std::vector<int> Racket::getColor() {
+	return { red, green, blue };
+}
+void Racket::setColor(int red, int blue, int green) {
+	this->red = red;
+	this->blue = blue;
+	this->green = green;
+}
 /* Ball class */
 Ball::Ball() {
 	//location[0] = xWindowMax / 2;
@@ -97,10 +102,12 @@ bool Ball::getStatus() {
 	return status;
 }
 void Ball::speedUp() {
-	currSpeed += addSpeed;
+	if(currSpeed < 20)
+		currSpeed += addSpeed;
 }
 void Ball::speedDown() {
-	currSpeed -= addSpeed;
+	if(currSpeed - addSpeed > 0)
+		currSpeed -= addSpeed;
 }
 void Ball::changeDefaultXDirection() {
 	xDirection *= -1;
@@ -108,28 +115,12 @@ void Ball::changeDefaultXDirection() {
 void Ball::changeDefaultYDirection() {
 	yDirection *= -1;
 }
-
+void Ball::changeYDirection(const double fraction) {
+	yDirection = -1 * fraction;
+}
+void Ball::changeXDirection(const double fraction) {
+	xDirection = -1 * fraction;
+}
 void Ball::moveBall() {
-
-	///* Racket class */
-	//double xTopLeftLocation, yTopLeftLocation;
-	//double xTopRightLocation, yTopRightLocation;
-	//double xBottomRightLocation, yBottomRightLocation;
-	//double xBottomLeftLocation, yBottomLeftLocation;
-
-
-
 	setDefaultBallLocation();
-	//if (xDirection > 0 && yDirection > 0) {
-
-	//}
-	//if (xDirection > 0 && yDirection < 0) {
-
-	//}
-	//if (xDirection < 0 && yDirection > 0) {
-
-	//}
-	//if (xDirection < 0 && yDirection > 0) {
-
-	//}
 }

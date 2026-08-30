@@ -9,6 +9,9 @@
 #include "GlobalVariableDefinitions.h"
 #include "Timer.h"
 
+int red1 = 255, blue1 = 0, green1 = 0;
+int red2 = 0, blue2 = 255, green2 = 0;
+
 char title[10] = "2D Scene!";
 
 /* Rackets */
@@ -162,39 +165,97 @@ void checkPointPosition() {
     /* Player 1 collisions */
     if (ball.getBallLocation().x > racket1.getTopLeftXLocation() && ball.getBallLocation().x < racket1.getTopLeftXLocation() + racket1.getWidth() && (ball.getBallLocation().y - 2) < yWindowMin + (2 * racket1.getHeight()))
     {
-        ball.changeDefaultXDirection();
-        ball.changeDefaultYDirection();
+        //(ballPos.y - racketPos.y) / racketHeight
+        int collisionFraction = ball.getBallLocation().x - racket1.getTopLeftXLocation();
+        const int racketProportions = racket1.getWidth() / 2;
+        if (collisionFraction < racketProportions) { collisionFraction = racketProportions - collisionFraction; }
+        const double racketCollisionRatio = collisionFraction / 15 == 0 ? 1 : collisionFraction / 15;
+
+        std::cout << "collisionFraction: " << collisionFraction << std::endl;
+        std::cout << "racketCollisionRatio: " << racketCollisionRatio << std::endl;
+        std::cout << "pushBackRatio: " << racketCollisionRatio << std::endl;
+        if (racketCollisionRatio == 1)
+        {
+            ball.changeDefaultYDirection();
+        }
+        else {
+            ball.changeDefaultYDirection();
+            ball.changeXDirection(racketCollisionRatio);
+        }
+        //ball.changeDefaultXDirection();
+        //ball.changeDefaultYDirection();
     }
     /* Player 2 collisions */
     if (ball.getBallLocation().x > racket2.getTopLeftXLocation() && ball.getBallLocation().x < racket2.getTopLeftXLocation() + racket2.getWidth() && (ball.getBallLocation().y + 2) > (racket2.getTopLeftYLocation() - racket2.getHeight()))
-
     {
-        ball.changeDefaultXDirection();
-        ball.changeDefaultYDirection();
+        int collisionFraction = ball.getBallLocation().x - racket2.getTopLeftXLocation();
+        const int racketProportions = racket2.getWidth() / 2;
+        if (collisionFraction < racketProportions) { collisionFraction = racketProportions - collisionFraction; }
+        const double racketCollisionRatio = collisionFraction / 15 == 0 ? 1 : collisionFraction / 15;
+
+        std::cout << "collisionFraction: " << collisionFraction << std::endl;
+        std::cout << "racketCollisionRatio: " << racketCollisionRatio << std::endl;
+        std::cout << "pushBackRatio: " << racketCollisionRatio << std::endl;
+        if (racketCollisionRatio == 1)
+        {
+            ball.changeDefaultYDirection();
+        }
+        else {
+            ball.changeDefaultYDirection();
+            ball.changeXDirection(racketCollisionRatio);
+        }
+        //ball.changeDefaultXDirection();
+        //ball.changeDefaultYDirection();
+        //ball.changeDefaultXDirection();
+        //ball.changeDefaultYDirection();
     }
 }
+
+
+
+
+
+
 void display() {
     glClear(GL_COLOR_BUFFER_BIT);
 
     //std::cout << "leftPos: " << leftPos << "rightPos: " << rightPos << "\n";
 
+    // How to make the point round (circle): https://community.khronos.org/t/rounded-and-square-points/77249
+    // How to use timer? https://cplusplus.com/forum/beginner/280938/
     glColor3f(0, 255, 0);
+    glPointSize(12.0);
+    glEnable(GL_POINT_SMOOTH);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glBegin(GL_POINTS);
         glVertex2f(ball.getBallLocation().x, ball.getBallLocation().y);
         timer.wait(10);
         ball.moveBall();
     glEnd();
 
-    /* Draw the first racket */
+    /* Rackets creation */
+    racket1.setColor(255, 0, 0);
+    racket2.setColor(0, 255, 0);
+    if (ball.getBallLocation().x > racket1.getTopLeftXLocation() && ball.getBallLocation().x < racket1.getTopLeftXLocation() + racket1.getWidth() && (ball.getBallLocation().y - 2) < yWindowMin + (2 * racket1.getHeight()))
+        racket1.setColor(255, 255, 0);
+    if (ball.getBallLocation().x > racket2.getTopLeftXLocation() && ball.getBallLocation().x < racket2.getTopLeftXLocation() + racket2.getWidth() && (ball.getBallLocation().y + 2) >(racket2.getTopLeftYLocation() - racket2.getHeight()))
+        racket2.setColor(0, 255, 255);
 
-    glColor3f(255, 0, 0);
+    /* Draw the first racket */
+    std::vector<int> racket1Color = racket1.getColor();
+    glColor3f(racket1Color[0], racket1Color[1], racket1Color[2]);
     glBegin(GL_POLYGON);
         glVertex2f(racket1.getTopLeftXLocation(), racket1.getTopLeftYLocation());
         glVertex2f(racket1.getTopLeftXLocation() + racket1.getWidth(), racket1.getTopLeftYLocation());
         glVertex2f(racket1.getTopLeftXLocation() + racket1.getWidth(), racket1.getTopLeftYLocation() - racket1.getHeight());
         glVertex2f(racket1.getTopLeftXLocation(), racket1.getTopLeftYLocation() - racket1.getHeight());
     glEnd();
-    glColor3f(0, 0, 255);
+
+    /* Draw the second racket */
+    std::vector<int> racket2Color = racket2.getColor();
+    glColor3f(racket2Color[0], racket2Color[1], racket2Color[2]);
+    //glColor3f(red2, green2, blue2);
     glBegin(GL_POLYGON);
         glVertex2f(racket2.getTopLeftXLocation(), racket2.getTopLeftYLocation());
         glVertex2f(racket2.getTopLeftXLocation() + racket2.getWidth(), racket2.getTopLeftYLocation());
@@ -210,9 +271,9 @@ void display() {
 int main(int argc, char** argv) {
 
     glutInit(&argc, argv);
-    glutInitWindowSize(500, 500);
+    glutInitWindowSize(900, 700);
     glutInitWindowPosition(0, 0);
-    glutCreateWindow("My Window");
+    glutCreateWindow("PingPong");
 
     // here are the new entries
     //glutKeyboardFunc(handleKeypress);

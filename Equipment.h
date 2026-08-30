@@ -1,11 +1,16 @@
 #pragma once
 
+#include <vector>
+#include <iostream>
+
 #include "GlobalVariableDefinitions.h"
+
 
 static double racketHeight, racketWidth;
 
 class Racket {
 private:
+	int red, green, blue;
 	double xTopLeftLocation , yTopLeftLocation;
 	double xTopRightLocation , yTopRightLocation;
 	double xBottomRightLocation , yBottomRightLocation;
@@ -26,6 +31,8 @@ public:
 	void setWidth(double newSize);
 	double getWidth();
 	double getSpeed();
+	void setColor(int red, int blue, int green);
+	std::vector<int> getColor();
 };
 
 class Ball {
@@ -37,6 +44,7 @@ private:
 	bool status = 0; // 0 means negative (moving down),  1 means positive (moving up)
 	int xDirection = -1; // 1 means positive x movement, -1 means negative x movement
 	int yDirection = -1; // 1 means positive y movement, -1 means negative y movement
+	int red, blue, green;
 
 public:
 	Ball();
@@ -49,5 +57,6 @@ public:
 	void setDefaultBallLocation();
 	void changeDefaultXDirection();
 	void changeDefaultYDirection();
-
+	void changeYDirection(const double fraction);
+	void changeXDirection(const double fraction);
 };

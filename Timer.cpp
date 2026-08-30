@@ -1,3 +1,5 @@
+/* https://cplusplus.com/forum/beginner/280938/ */
+
 #include "Timer.h"
 #include <iostream>
 #include <thread>
