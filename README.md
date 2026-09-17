@@ -1,6 +1,6 @@
-# PingPong
+# Pongi
 
-PingPong is my version of Atari's classic game, **Pong**.
+Pongi is my version of Atari's classic game, **Pong**.
 
 ## The purpose of the game
 
@@ -16,7 +16,7 @@ https://github.com/user-attachments/assets/11022ea4-2ab9-4345-af8d-3f4a3af26c52
 
 Later, I understood that the game was too static and became boring quite quickly. It was challenging and fun in some ways, but it wasn't very exciting, so I decided to upgrade it into the Pong game we know and love:
 
-https://github.com/user-attachments/assets/92537773-0b33-476c-b56b-b2be2f25a921
+https://github.com/user-attachments/assets/c21dce8c-462c-4f1a-9c6e-8070d055728b
 
 The game went through several different versions until I managed to achieve the result I was aiming for. I'll show each stage below.
 
@@ -63,3 +63,11 @@ This way, your opponent can't easily predict your next move.
 * You can see the text at the top of the screen, which includes the current score and the current physics mode being used. The physics mode can be changed freely by pressing a button.
 
 https://github.com/user-attachments/assets/bb2a5217-c20a-4dda-8141-0af27358c40f
+
+
+
+## Download
+
+You can download the latest version of the game here: (Windows version, maybe one day will implement for Linux)
+
+[Download Pongi](https://github.com/yarden21212/PingPong/releases/download/v1.0.0/Pongi.zip)
