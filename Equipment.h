@@ -18,6 +18,7 @@ private:
 	double movementSpeed;
 	double normalFormRed = 200.0f, normalFormGreen = 0.0f, normalFormBlue = 0.0f;
 	double outlinesRed = 255.0f, outlinesGreen = 0.0f, outlinesBlue = 0.0f;
+	bool activePhysicsType = 0;
 
 public:
 	Racket(std::string);
@@ -33,14 +34,16 @@ public:
 	double getSpeed();
 	void setColor(int red, int blue, int green);
 	std::vector<int> getColor();
+	bool getPhysics();
+	void setPhysics();
 };
 
 class Ball {
 private:
 	Location location;
 	//double location[2];
-	double currSpeed = 0.02;
-	double addSpeed = 0.005;
+	int speed = 2;
+	int addSpeed = 1;
 	bool status = 0; // 0 means negative (moving down),  1 means positive (moving up)
 	int xDirection = -1; // 1 means positive x movement, -1 means negative x movement
 	int yDirection = -1; // 1 means positive y movement, -1 means negative y movement
@@ -59,4 +62,8 @@ public:
 	void changeDefaultYDirection();
 	void changeYDirection(const double fraction);
 	void changeXDirection(const double fraction);
+	int getSpeed();
+	//void setSpeed();
+	
+
 };

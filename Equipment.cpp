@@ -81,6 +81,12 @@ void Racket::setColor(int red, int blue, int green) {
 	this->blue = blue;
 	this->green = green;
 }
+bool Racket::getPhysics() {
+	return this->activePhysicsType;
+}
+void Racket::setPhysics() {
+	this->activePhysicsType = abs(this->activePhysicsType - 1); // 0 becomes |0-1| = 1, 1 becomes |1-1| = 0
+}
 /* Ball class */
 Ball::Ball() {
 	//location[0] = xWindowMax / 2;
@@ -102,12 +108,15 @@ bool Ball::getStatus() {
 	return status;
 }
 void Ball::speedUp() {
-	if(currSpeed < 20)
-		currSpeed += addSpeed;
+	if(speed < 8)
+		speed += addSpeed;
 }
 void Ball::speedDown() {
-	if(currSpeed - addSpeed > 0)
-		currSpeed -= addSpeed;
+	if(speed - addSpeed > 0)
+		speed -= addSpeed;
+}
+int Ball::getSpeed() {
+	return speed;
 }
 void Ball::changeDefaultXDirection() {
 	xDirection *= -1;
