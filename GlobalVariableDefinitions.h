@@ -5,5 +5,5 @@ extern int yWindowMax;
 extern int yWindowMin;
 
 struct Location {
-	double x, y;
+	float x, y;
 };

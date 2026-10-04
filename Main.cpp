@@ -10,6 +10,8 @@
 #include "Equipment.h"
 #include "GlobalVariableDefinitions.h"
 #include "Timer.h"
+#include "Sound.h"
+
 
 int red1 = 255, blue1 = 0, green1 = 0;
 int red2 = 0, blue2 = 255, green2 = 0;
@@ -34,7 +36,13 @@ int keyArr[127];
 int user1Points = 0;
 int user2Points = 0;
 
+/* Sound */
+std::string path = "Sounds/racket_hit.wav";
+Sound sound;
 
+
+/*Temporary*/
+int applied = 0;
 
 void init()
 {
@@ -123,19 +131,20 @@ void idle() {
 
 
 void detectPoint() {
-    if (ball.getBallLocation().y <= yWindowMin + 5) {
+    //if (ball.getBallLocation().y <= yWindowMin + 5) {
+	if (ball.getBallLocation().y <= yWindowMin) {
         user1Points++;
-        ball.setBallLocation(xWindowMax / 2, yWindowMax/2);
+        ball.setBallLocation(xWindowMax / 2.0f, yWindowMax/2.0f);
 
-        ball.changeXDirection(1);
-        ball.changeYDirection(1);
+        ball.changeXDirection(1.0f);
+        ball.changeYDirection(1.0f);
     }
     else if (ball.getBallLocation().y >= xWindowMax) {
         user2Points++;
-        ball.setBallLocation(xWindowMax/2, yWindowMax/2);
+        ball.setBallLocation(xWindowMax/2.0f, yWindowMax/2.0f);
 
-        ball.changeXDirection(-1);
-        ball.changeYDirection(-1);
+        ball.changeXDirection(-1.0f);
+        ball.changeYDirection(-1.0f);
     }
 
 }
@@ -148,19 +157,19 @@ void playersText() {
     user2 += " Physics type: " + std::to_string(racket2.getPhysics());
 
 
-    glRasterPos2f(xWindowMin + 2, yWindowMax -10);
+    glRasterPos2f(xWindowMin + 2.0f, yWindowMax -10.0f);
     for(int i = 0; i < text.size(); i++) {
         glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, text[i]);
     }
-    glRasterPos2f(xWindowMin + 4, yWindowMax -25);
+    glRasterPos2f(xWindowMin + 4.0f, yWindowMax -25.0f);
     for (int i = 0; i < user1.size(); i++) {
         glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, user1[i]);
     }
-    glRasterPos2f(xWindowMin + 4, yWindowMax -40);
+    glRasterPos2f(xWindowMin + 4.0f, yWindowMax -40.0f);
     for (int i = 0; i < user2.size(); i++) {
         glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, user2[i]);
     }
-    glRasterPos2f(xWindowMin + 2, yWindowMax -55);
+    glRasterPos2f(xWindowMin + 2.0f, yWindowMax -55.0f);
     for (int i = 0; i < text.size(); i++) {
         glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, text[i]);
     }
@@ -186,39 +195,53 @@ void checkPointPosition() {
         ball.changeDefaultYDirection();
         detectPoint();
     }
+
     /* Player 1 collisions */
-    if (ball.getBallLocation().x > racket1.getTopLeftXLocation() && ball.getBallLocation().x < racket1.getTopLeftXLocation() + racket1.getWidth() && (ball.getBallLocation().y - 2) < yWindowMin + (2 * racket1.getHeight()))
+	bool player1OutOfBounds = ball.getBallLocation().y <= racket1.getTopLeftYLocation() - racket1.getHeight(); // Checks if the ball is below the racket (out of bounds)
+    if (!(player1OutOfBounds) && ball.getBallLocation().x > racket1.getTopLeftXLocation() && ball.getBallLocation().x < racket1.getTopLeftXLocation() + racket1.getWidth() && (ball.getBallLocation().y - 2) < yWindowMin + (2 * racket1.getHeight()))
     {
+        std::cout << "I'm player 1\n";
+        /* Racket's hit sound */
+        sound.playSound(path);
+
         if (racket1.getPhysics() == 0) {
             /* Physics 1 -> Most accurate */
             /* Guide for physics(The first reply\answer): https://gamedev.stackexchange.com/questions/4253/in-pong-how-do-you-calculate-the-balls-direction-when-it-bounces-off-the-paddl */
-            double racketCenter = (racket1.getTopLeftXLocation() + racket1.getWidth()) / 2.0;
-            double intersectX = ball.getBallLocation().x - racketCenter; // The intersect of the ball with the racket's x location
-            double relativeIntersectX = (racket1.getTopLeftXLocation() + (racket1.getWidth() / 2.0)) - intersectX;
-            double normalizedRelativeIntersectionX = (relativeIntersectX / (racket1.getWidth() / 2.0));
-            double bounceAngle = normalizedRelativeIntersectionX * ((5.0 * 3.141) / 12.0);
+            float racketCenter = racket1.getTopLeftXLocation() + racket1.getWidth() / 2.0f; // GetTopLeftXLocation = the left edge, and then we add half the width and we reach the center
+            float intersectX = ball.getBallLocation().x - racketCenter; // The intersect of the ball with the racket's x location
+            float relativeIntersectX = (racket1.getTopLeftXLocation() + (racket1.getWidth() / 2.0f)) - intersectX;
+            float normalizedRelativeIntersectionX = (relativeIntersectX / (racket1.getWidth() / 2.0f)); // Expresses that distance relative to the racket’s size:
+            float bounceAngle = normalizedRelativeIntersectionX * ((5.0f * 3.141f) / 12.0f); // Turns that position into an angle. The expression in parentheses is approximately 75° in radians.
 
 
             /* calculate new ball velocities, using simple trigonometry. */
-            //double ballVx = 4 * cos(bounceAngle);
-            //double ballVy = 4 * -sin(bounceAngle);
-            double ballVx = ball.getSpeed() * cos(bounceAngle);
-            double ballVy = -(bounceAngle);
+            float ballVx = -ball.getSpeed() * (float)cos(bounceAngle);
+            float ballVy = ball.getSpeed() * (bounceAngle);
+			std::cout << "ballVy = " << ballVy << std::endl;
 
-            ball.changeXDirection(ballVx);
-            ball.changeYDirection(ballVy);
+			// The ball got hit on the racket's side, so it needs the first line prevents the ball from going through the racket, and the second line changes the ball's direction to the opposite one, 
+			// but with a wider angle, so it moves more to the side, and not just straight up, which is more realistic
+            if (ball.getBallLocation().y < racket1.getTopLeftYLocation())
+            {
+                ball.setBallLocation(ball.getBallLocation().x, racket1.getTopLeftYLocation());
+                ball.changeXDirection(ballVx * -10.0f);
+                ball.changeYDirection(ballVy);
+            }
+            // The ball hit the racket it self and not its edges (sides)
+            else {
+                ball.changeXDirection(ballVx);
+                ball.changeYDirection(ballVy);
+            }
+
         }
         else {
             /*Physics 2 -> Mine*/
             //(ballPos.y - racketPos.y) / racketHeight
-            int collisionFraction = ball.getBallLocation().x - racket1.getTopLeftXLocation();
-            const int racketProportions = racket1.getWidth() / 2;
+            float collisionFraction = ball.getBallLocation().x - racket1.getTopLeftXLocation();
+            const float racketProportions = racket1.getWidth() / 2.0f;
             if (collisionFraction < racketProportions) { collisionFraction = racketProportions - collisionFraction; }
-            const double racketCollisionRatio = collisionFraction / 15 == 0 ? 1 : collisionFraction / 15;
+            const float racketCollisionRatio = collisionFraction / 15.0f == 0 ? 1.0f : collisionFraction / 15.0f;
 
-            std::cout << "collisionFraction: " << collisionFraction << std::endl;
-            std::cout << "racketCollisionRatio: " << racketCollisionRatio << std::endl;
-            std::cout << "pushBackRatio: " << racketCollisionRatio << std::endl;
             if (racketCollisionRatio == 1)
             {
                 ball.changeDefaultYDirection();
@@ -230,34 +253,45 @@ void checkPointPosition() {
         }
     }
     /* Player 2 collisions */
-    if (ball.getBallLocation().x > racket2.getTopLeftXLocation() && ball.getBallLocation().x < racket2.getTopLeftXLocation() + racket2.getWidth() && (ball.getBallLocation().y + 2) > (racket2.getTopLeftYLocation() - racket2.getHeight()))
+	bool player2OutOfBounds = ball.getBallLocation().y >= racket2.getTopLeftYLocation(); // Checks if the ball is above the racket (out of bounds)
+    if (!(player2OutOfBounds) && ball.getBallLocation().x > racket2.getTopLeftXLocation() && ball.getBallLocation().x < racket2.getTopLeftXLocation() + racket2.getWidth() && (ball.getBallLocation().y + 2) > (racket2.getTopLeftYLocation() - racket2.getHeight()))
     {
+        /* Racket's hit sound */
+        sound.playSound(path);
+        
 
         if (racket2.getPhysics() == 0) {
-            /* Physics 1 */
-            double racketXCenter = (racket2.getTopLeftXLocation() + racket2.getWidth()) / 2.0;
-            double intersectX = ball.getBallLocation().x - racketXCenter; // The intersect of the ball with the racket's x location
-            double relativeIntersectX = (racket2.getTopLeftXLocation() + (racket2.getWidth() / 2.0)) - intersectX;
-            double normalizedRelativeIntersectionX = (relativeIntersectX / (racket2.getWidth() / 2.0));
-            double bounceAngle = normalizedRelativeIntersectionX * ((5.0 * 3.141) / 12.0);
+            float racketCenter = racket2.getTopLeftXLocation() + racket2.getWidth() / 2.0f;
+            float intersectX = ball.getBallLocation().x - racketCenter;
+            float relativeIntersectX = (racket2.getTopLeftXLocation() + (racket2.getWidth() / 2.0f)) - intersectX;
+            float normalizedRelativeIntersectionX = relativeIntersectX / (racket2.getWidth() / 2.0f);
+            float bounceAngle = normalizedRelativeIntersectionX * ((5.0f * 3.141f) / 12.0f);
 
+            float ballVx = -ball.getSpeed() * sin(bounceAngle);
+            float ballVy = -ball.getSpeed() * (bounceAngle);
 
-            /* calculate new ball velocities, using simple trigonometry. */
-            //double ballVx = 4 * cos(bounceAngle);
-            //double ballVy = 4 * -sin(bounceAngle);
-            double ballVx = ball.getSpeed() * cos(bounceAngle);
-            double ballVy = (bounceAngle);
+            std::cout << "bounceAngle: " << bounceAngle
+                << " | ballVx: " << ballVx
+                << " | ballVy: " << ballVy << '\n';
 
-            ball.changeXDirection(ballVx);
-            ball.changeYDirection(ballVy);
+            if (ball.getBallLocation().y > racket2.getTopLeftYLocation() - racket2.getHeight())
+            {
+                ball.setBallLocation(ball.getBallLocation().x, racket2.getTopLeftYLocation() - racket2.getHeight());
+                ball.changeXDirection(ballVx * 10.0f);
+                ball.changeYDirection(ballVy);
+            }
+            else {
+                ball.changeXDirection(ballVx);
+                ball.changeYDirection(ballVy);
+            }
         }
         
         else {
             /* Physics 2 */
-            int collisionFraction = ball.getBallLocation().x - racket2.getTopLeftXLocation();
-            const int racketProportions = racket2.getWidth() / 2;
+            float collisionFraction = ball.getBallLocation().x - racket2.getTopLeftXLocation();
+            const float racketProportions = racket2.getWidth() / 2.0f;
             if (collisionFraction < racketProportions) { collisionFraction = racketProportions - collisionFraction; }
-            const double racketCollisionRatio = collisionFraction / 15 == 0 ? 1 : collisionFraction / 15;
+            const float racketCollisionRatio = collisionFraction / 15.0f == 0.0f ? 1.1f : collisionFraction / 15.0f;
 
             std::cout << "collisionFraction: " << collisionFraction << std::endl;
             std::cout << "racketCollisionRatio: " << racketCollisionRatio << std::endl;
@@ -294,7 +328,7 @@ void display() {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glBegin(GL_POINTS);
-        glVertex2f(ball.getBallLocation().x, ball.getBallLocation().y);
+        glVertex2f( ball.getBallLocation().x,  ball.getBallLocation().y);
         timer.wait(10);
         ball.moveBall();
     glEnd();
@@ -302,30 +336,49 @@ void display() {
     /* Rackets creation */
     racket1.setColor(255, 0, 0);
     racket2.setColor(0, 255, 0);
-    if (ball.getBallLocation().x > racket1.getTopLeftXLocation() && ball.getBallLocation().x < racket1.getTopLeftXLocation() + racket1.getWidth() && (ball.getBallLocation().y - 2) < yWindowMin + (2 * racket1.getHeight()))
+    if (ball.getBallLocation().x > racket1.getTopLeftXLocation() && ball.getBallLocation().x < racket1.getTopLeftXLocation() + racket1.getWidth() && (ball.getBallLocation().y - 2.0f) < yWindowMin + (2.0f * racket1.getHeight()))
         racket1.setColor(255, 255, 0);
-    if (ball.getBallLocation().x > racket2.getTopLeftXLocation() && ball.getBallLocation().x < racket2.getTopLeftXLocation() + racket2.getWidth() && (ball.getBallLocation().y + 2) >(racket2.getTopLeftYLocation() - racket2.getHeight()))
+    if (ball.getBallLocation().x > racket2.getTopLeftXLocation() && ball.getBallLocation().x < racket2.getTopLeftXLocation() + racket2.getWidth() && (ball.getBallLocation().y + 2.0f) > (racket2.getTopLeftYLocation() - racket2.getHeight()))
         racket2.setColor(0, 255, 255);
 
     /* Draw the first racket */
-    std::vector<int> racket1Color = racket1.getColor();
+    std::vector<float> racket1Color = racket1.getColor();
+    /*Outlines*/
+    glColor4f(255.0f,255.0f,255.0f, 0.85f);
+    glBegin(GL_POLYGON);
+        glVertex2f((racket1.getTopLeftXLocation()) -1.0f, racket1.getTopLeftYLocation()*1.0f +2.0f);
+        glVertex2f((racket1.getTopLeftXLocation() + racket1.getWidth() + 1.0f), (racket1.getTopLeftYLocation() + 2.0f));
+        glVertex2f((racket1.getTopLeftXLocation() + racket1.getWidth() + 1.0f), (racket1.getTopLeftYLocation() - racket1.getHeight() - 2.0f));
+        glVertex2f((racket1.getTopLeftXLocation()-1.0f), (racket1.getTopLeftYLocation() - racket1.getHeight()-2.0f));
+    glEnd();
+    /*Racket*/
     glColor3f(racket1Color[0], racket1Color[1], racket1Color[2]);
     glBegin(GL_POLYGON);
-        glVertex2f(racket1.getTopLeftXLocation(), racket1.getTopLeftYLocation());
-        glVertex2f(racket1.getTopLeftXLocation() + racket1.getWidth(), racket1.getTopLeftYLocation());
-        glVertex2f(racket1.getTopLeftXLocation() + racket1.getWidth(), racket1.getTopLeftYLocation() - racket1.getHeight());
-        glVertex2f(racket1.getTopLeftXLocation(), racket1.getTopLeftYLocation() - racket1.getHeight());
+        glVertex2f( racket1.getTopLeftXLocation(),  racket1.getTopLeftYLocation());
+        glVertex2f( (racket1.getTopLeftXLocation() + racket1.getWidth()),  racket1.getTopLeftYLocation());
+        glVertex2f( (racket1.getTopLeftXLocation() + racket1.getWidth()),  racket1.getTopLeftYLocation() -  racket1.getHeight());
+        glVertex2f( racket1.getTopLeftXLocation(),  racket1.getTopLeftYLocation() -  racket1.getHeight());
     glEnd();
 
     /* Draw the second racket */
-    std::vector<int> racket2Color = racket2.getColor();
+    std::vector<float> racket2Color = racket2.getColor();
+
+    /*Outlines*/
+    glColor4f(255.0f, 255.0f, 255.0f, 0.85f);
+    glBegin(GL_POLYGON);
+        glVertex2f( (racket2.getTopLeftXLocation() - 1.0f),  (racket2.getTopLeftYLocation() + 2.0f));
+        glVertex2f( (racket2.getTopLeftXLocation() + racket2.getWidth() + 1.0f),  (racket2.getTopLeftYLocation() + 2.0f));
+        glVertex2f( (racket2.getTopLeftXLocation() + racket2.getWidth() + 1.0f),  (racket2.getTopLeftYLocation() - racket2.getHeight() - 2.0f));
+        glVertex2f( (racket2.getTopLeftXLocation() - 1.0f),  (racket2.getTopLeftYLocation() - racket2.getHeight() - 2.0f));
+    glEnd();
+
     glColor3f(racket2Color[0], racket2Color[1], racket2Color[2]);
     //glColor3f(red2, green2, blue2);
     glBegin(GL_POLYGON);
-        glVertex2f(racket2.getTopLeftXLocation(), racket2.getTopLeftYLocation());
-        glVertex2f(racket2.getTopLeftXLocation() + racket2.getWidth(), racket2.getTopLeftYLocation());
-        glVertex2f(racket2.getTopLeftXLocation() + racket2.getWidth(), racket2.getTopLeftYLocation() - racket2.getHeight());
-        glVertex2f(racket2.getTopLeftXLocation(), racket2.getTopLeftYLocation() - racket2.getHeight());
+        glVertex2f( racket2.getTopLeftXLocation(),  racket2.getTopLeftYLocation());
+        glVertex2f( (racket2.getTopLeftXLocation() + racket2.getWidth()),  racket2.getTopLeftYLocation());
+        glVertex2f( (racket2.getTopLeftXLocation() + racket2.getWidth()),  racket2.getTopLeftYLocation() -  racket2.getHeight());
+        glVertex2f( racket2.getTopLeftXLocation(),  racket2.getTopLeftYLocation() -  racket2.getHeight());
     glEnd();
     glFlush();
     
@@ -339,6 +392,7 @@ int main(int argc, char** argv) {
     std::cout << "[User2 physics: " << racket2.getPhysics() << std::endl;
     std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n";
     
+ 
     glutInit(&argc, argv);
     glutInitWindowSize(900, 700);
     glutInitWindowPosition(0, 0);
@@ -351,8 +405,39 @@ int main(int argc, char** argv) {
     glutIdleFunc(idle);
 
     init();
-
     glutDisplayFunc(display);
+
+
 
     glutMainLoop();
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

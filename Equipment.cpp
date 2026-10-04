@@ -10,7 +10,7 @@ double xBottomRightLocation, yBottomRightLocation;
 double xBottomLeftLocation, yBottomLeftLocation;
 
 
-void Racket::InitializeRacket(double xTopLeftLocation, double yTopLeftLocation, double height, double width) {
+void Racket::InitializeRacket(float xTopLeftLocation, float yTopLeftLocation, float height, float width) {
 	if (xBottomLeftLocation <= xWindowMin)
 		return;
 	
@@ -41,7 +41,7 @@ Racket::Racket(std::string user) {
 	InitializeRacket(xTopLeftLocation, yTopLeftLocation, racketHeight, racketWidth);
 }
 
-void Racket::setLocation(double xTopLeftLocation, double yTopLeftLocation) {
+void Racket::setLocation(float xTopLeftLocation, float yTopLeftLocation) {
 	//std::cout << "xTopLeftLocation: " << xTopLeftLocation << std::endl;
 	if (xTopLeftLocation <= xWindowMin || xTopLeftLocation >= xWindowMax - racketWidth)
 		return;
@@ -49,34 +49,34 @@ void Racket::setLocation(double xTopLeftLocation, double yTopLeftLocation) {
 	this->yTopLeftLocation = yTopLeftLocation;
 	InitializeRacket(this->xTopLeftLocation, this->yTopLeftLocation, racketHeight, racketWidth);
 }
-double Racket::getTopLeftXLocation() {
+float Racket::getTopLeftXLocation() {
 	return this->xTopLeftLocation;
 }
-double Racket::getTopLeftYLocation() {
+float Racket::getTopLeftYLocation() {
 	return this->yTopLeftLocation;
 }
-void Racket::setSpeed(double newSpeed) {
+void Racket::setSpeed(float newSpeed) {
 	this->movementSpeed = newSpeed;
 }
-void Racket::setHeight(double newHeight) {
+void Racket::setHeight(float newHeight) {
 	racketHeight = newHeight;
 }
-double Racket::getHeight() {
+float Racket::getHeight() {
 	return racketHeight;
 }
-void Racket::setWidth(double newWidth) {
+void Racket::setWidth(float newWidth) {
 	racketWidth = newWidth;
 }
-double Racket::getWidth() {
+float Racket::getWidth() {
 	return racketWidth;
 }
-double Racket::getSpeed() {
+float Racket::getSpeed() {
 	return this->movementSpeed;
 }
-std::vector<int> Racket::getColor() {
+std::vector<float> Racket::getColor() {
 	return { red, green, blue };
 }
-void Racket::setColor(int red, int blue, int green) {
+void Racket::setColor(float red, float blue, float green) {
 	this->red = red;
 	this->blue = blue;
 	this->green = green;
@@ -87,11 +87,11 @@ bool Racket::getPhysics() {
 void Racket::setPhysics() {
 	this->activePhysicsType = abs(this->activePhysicsType - 1); // 0 becomes |0-1| = 1, 1 becomes |1-1| = 0
 }
-/* Ball class */
+
+
+/* ------------- Ball class -------------- */
 Ball::Ball() {
-	//location[0] = xWindowMax / 2;
-	//location[1] = yWindowMax / 2;
-	location = { xWindowMax / 2.0 , yWindowMax / 2.0 };
+	location = { xWindowMax / 2.0f , yWindowMax / 2.0f };
 }
 Location Ball::getBallLocation() {
 	return location;
@@ -100,7 +100,7 @@ void Ball::setDefaultBallLocation() {
 	location.x = location.x + xDirection;
 	location.y = location.y + yDirection;
 }
-void Ball::setBallLocation(int newXLocation, int newYLocation) {
+void Ball::setBallLocation(float newXLocation, float newYLocation) {
 	location.x = newXLocation;
 	location.y = newYLocation;
 }
@@ -115,7 +115,7 @@ void Ball::speedDown() {
 	if(speed - addSpeed > 0)
 		speed -= addSpeed;
 }
-int Ball::getSpeed() {
+float Ball::getSpeed() {
 	return speed;
 }
 void Ball::changeDefaultXDirection() {
@@ -124,12 +124,18 @@ void Ball::changeDefaultXDirection() {
 void Ball::changeDefaultYDirection() {
 	yDirection *= -1;
 }
-void Ball::changeYDirection(const double fraction) {
-	yDirection = -1 * fraction;
+void Ball::changeYDirection(const float fraction) {
+	yDirection = fraction;
 }
-void Ball::changeXDirection(const double fraction) {
-	xDirection = -1 * fraction;
+void Ball::changeXDirection(const float fraction) {
+	xDirection = fraction;
 }
 void Ball::moveBall() {
 	setDefaultBallLocation();
+}
+float Ball::getXDirection() {
+	return xDirection;
+}
+float Ball::getYDirection() {
+	return yDirection;
 }
