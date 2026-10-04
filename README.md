@@ -70,4 +70,5 @@ https://github.com/user-attachments/assets/bb2a5217-c20a-4dda-8141-0af27358c40f
 
 You can download the latest version of the game here: (Windows version, maybe one day will implement for Linux)
 
-[Download Pongi](https://github.com/yarden21212/PingPong/releases/download/v1.0.0/Pongi.zip)
+[Pongi.zip](https://github.com/user-attachments/files/33025926/Pongi.zip)
+
